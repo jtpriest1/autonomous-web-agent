@@ -23,6 +23,8 @@ def generate(prompt: str, model: str = "llama3.1:8b", **kwargs) -> str:
         resp = requests.post(OLLAMA_URL, json=payload, timeout=120)
         resp.raise_for_status()
         data = resp.json()
-        return data.get("response", "")
+        text = data.get("response") or ""
+        return text.strip()
+
     except requests.RequestException as e:
         raise RuntimeError(f"Ollama request failed: {e}") from e
