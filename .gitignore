@@ -21,3 +21,4 @@ ms-playwright/
 # Data/cache
 .cache/
 .env
+logs/
