@@ -4,6 +4,7 @@
 from typing import List, Tuple, Optional
 import time
 
+from models.hf_summarizer import summarize_hf
 from tools.web_search import web_search
 from tools.fetch_page import fetch_page
 from models.ollama_client import generate
@@ -89,16 +90,25 @@ def research(
                 chars=len(page["text"]),
             )
 
-            summary = _summarize_page(
-                query=query,
-                title=page["title"] or title,
-                url=url,
-                text=page["text"],
-                model=chosen_model,
-            )
-            log_kv(logger, event="summarized", idx=i, url=url)
+            # Use HF DistilBART if the model string starts with "hf:", else use Ollama.
+            if str(chosen_model).startswith("hf:"):
+                summary = summarize_hf(
+                    f"{(page['title'] or title)}\n{url}\n\n{page['text']}",
+                    max_words=90,
+                    min_words=50,
+                )
+            else:
+                summary = _summarize_page(
+                    query=query,
+                    title=page["title"] or title,
+                    url=url,
+                    text=page["text"],
+                    model=chosen_model,
+                )
 
+            log_kv(logger, event="summarized", idx=i, url=url)
             sections.append(f"## {i}. {page['title'] or title}\n{summary}\n")
+
         except Exception as e:
             log_kv(logger, event="error", idx=i, url=url, err=str(e)[:120])
             sections.append(f"## {i}. {title}\n(Skipped due to error: {e})\nSource: {url}\n")
@@ -110,5 +120,5 @@ def research(
 
 
 if __name__ == "__main__":
-    # Quick manual test:
-    print(research("practical uses of autonomous web agents in e-commerce", k=3, model="llama3.2:3b", max_chars=1200))
+    # Quick manual test (set model to hf:distilbart to try the HF path):
+    print(research("practical uses of autonomous web agents in e-commerce", k=3, model="hf:distilbart", max_chars=1200))
