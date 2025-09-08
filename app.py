@@ -11,11 +11,21 @@ st.caption("Type a question. The agent will search the web, fetch pages, and sum
 # --- Sidebar controls ---
 with st.sidebar:
     st.subheader("Model")
-    model = st.selectbox(
+
+    # Human-friendly labels mapped to internal model ids
+    options = {
+        "Llama 3.2 — 3B (fast)": "llama3.2:3b",
+        "Llama 3.1 — 8B (deeper)": "llama3.1:8b",
+        "HF DistilBART (MPS) — fast local summarizer": "hf:distilbart",
+    }
+    choice = st.selectbox(
         "Pick a local model",
-        options=["llama3.2:3b", "llama3.1:8b"],
+        options=list(options.keys()),
         index=0,  # default to 3B for speed
     )
+    model = options[choice]
+
+    st.caption("Tip: The first time you pick **HF DistilBART**, it will download ~1.2GB of weights, then it’s fast on Apple M-series (MPS).")
 
     max_chars = st.number_input(
         "Max characters per page",
