@@ -65,6 +65,8 @@ with st.sidebar:
 
     st.caption("Tip: First run of **HF DistilBART** downloads ~1.2 GB once, then it’s fast on Apple M-series (MPS).")
 
+st.markdown("[GitHub →](https://github.com/jtpriest1/autonomous-web-agent)")
+
 # --- header ----------------------------------------------------------------
 st.title("🕸️ Autonomous Web Agent — Local")
 st.write(
