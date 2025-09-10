@@ -1,9 +1,10 @@
 # agent/researcher.py
-# Orchestrates: search -> fetch page -> summarize with the local model.
+# Orchestrates: search -> (rerank) -> fetch page -> summarize with the chosen model.
 
 from typing import List, Tuple, Optional
 import time
 
+from models.reranker import rerank
 from models.hf_summarizer import summarize_hf
 from tools.web_search import web_search
 from tools.fetch_page import fetch_page
@@ -20,10 +21,7 @@ def _summarize_page(
     text: str,
     model: str,
 ) -> str:
-    """
-    Ask the local LLM for a short, useful summary tied to the page.
-    Keep it tight so it runs fast on your hardware.
-    """
+    """Small prompt for concise, factual bullets."""
     prompt = f"""You are a precise research assistant.
 Summarize the page in 5 short bullet points (max 90 words total), focused on:
 - facts relevant to the user query
@@ -44,7 +42,6 @@ Output format:
 - bullet 5
 [Citation: {url}]
 """
-    # Low temperature for factual summaries.
     return generate(prompt, model=model, options={"temperature": 0.2})
 
 
@@ -57,11 +54,10 @@ def research(
     """
     Run a small research task:
       1) web_search -> top k results
-      2) fetch each page (truncate to max_chars)
-      3) summarize each with the chosen model
-    Returns one printable string with sections.
+      2) rerank by neural relevance (titles)
+      3) fetch each page (truncate to max_chars)
+      4) summarize each with the chosen model
     """
-    # Default model if none was passed (matches UI default).
     chosen_model = model or "llama3.2:3b"
 
     t_start = time.time()
@@ -76,7 +72,18 @@ def research(
     if not results:
         return f"# Research results for: {query}\n\n(No results found.)"
 
-    # 2) Fetch + 3) Summarize
+    # 2) Rerank (best-first) using titles as lightweight proxies.
+    try:
+        titles_only = [t for (t, _) in results]
+        order = rerank(query, titles_only, top_k=k)  # returns list[(idx, score)]
+        if order:
+            results = [results[i] for (i, _score) in order]
+            log_kv(logger, event="rerank_ok", order=[i for (i, _s) in order])
+    except Exception as e:
+        log_kv(logger, event="rerank_error", err=str(e)[:120])
+        # fall back to original order
+
+    # 3) Fetch + 4) Summarize
     sections = [f"# Research results for: {query}\n"]
     for i, (title, url) in enumerate(results, start=1):
         try:
@@ -90,7 +97,7 @@ def research(
                 chars=len(page["text"]),
             )
 
-            # Use HF DistilBART if the model string starts with "hf:", else use Ollama.
+            # HF path if model starts with "hf:", else Ollama.
             if str(chosen_model).startswith("hf:"):
                 summary = summarize_hf(
                     f"{(page['title'] or title)}\n{url}\n\n{page['text']}",
@@ -120,5 +127,7 @@ def research(
 
 
 if __name__ == "__main__":
-    # Quick manual test (set model to hf:distilbart to try the HF path):
+    # Quick manual test (try either Ollama or HF route):
+    # - model="llama3.2:3b"
+    # - model="hf:distilbart"
     print(research("practical uses of autonomous web agents in e-commerce", k=3, model="hf:distilbart", max_chars=1200))
