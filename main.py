@@ -6,4 +6,4 @@ resp = requests.post(
     timeout=120
 )
 resp.raise_for_status()
-print("\n--- MODEL OUTPUT ---\n" + resp.json().get("response", "<no response>")
+print("\n--- MODEL OUTPUT ---\n" + resp.json().get("response", "<no response>"))
