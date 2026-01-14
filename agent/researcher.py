@@ -63,7 +63,6 @@ def research(
     t_start = time.time()
     log_kv(logger, event="start", query=query, k=k, model=chosen_model, max_chars=max_chars)
 
-    # 1) Search
     results: List[Tuple[str, str]] = web_search(query, max_results=k)
     log_kv(logger, event="search_ok", n_results=len(results))
     for title, url in results:
@@ -72,7 +71,6 @@ def research(
     if not results:
         return f"# Research results for: {query}\n\n(No results found.)"
 
-    # 2) Rerank (best-first) using titles as lightweight proxies.
     try:
         titles_only = [t for (t, _) in results]
         order = rerank(query, titles_only, top_k=k)  # returns list[(idx, score)]
@@ -81,9 +79,7 @@ def research(
             log_kv(logger, event="rerank_ok", order=[i for (i, _s) in order])
     except Exception as e:
         log_kv(logger, event="rerank_error", err=str(e)[:120])
-        # fall back to original order
 
-    # 3) Fetch + 4) Summarize
     sections = [f"# Research results for: {query}\n"]
     for i, (title, url) in enumerate(results, start=1):
         try:
@@ -97,7 +93,7 @@ def research(
                 chars=len(page["text"]),
             )
 
-            # HF path if model starts with "hf:", else Ollama.
+            
             if str(chosen_model).startswith("hf:"):
                 summary = summarize_hf(
                     f"{(page['title'] or title)}\n{url}\n\n{page['text']}",
@@ -127,7 +123,5 @@ def research(
 
 
 if __name__ == "__main__":
-    # Quick manual test (try either Ollama or HF route):
-    # - model="llama3.2:3b"
-    # - model="hf:distilbart"
+
     print(research("practical uses of autonomous web agents in e-commerce", k=3, model="hf:distilbart", max_chars=1200))
