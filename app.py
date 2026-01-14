@@ -1,4 +1,4 @@
-# app.py — Streamlit UI for the web agent
+# app.py streamlit UI for the web agent
 
 import re
 import streamlit as st
@@ -10,13 +10,12 @@ st.set_page_config(
     layout="wide",
 )
 
-# cache the slow bit; 10 min is fine
+# cache slow bit; 10 min
 @st.cache_data(show_spinner=False, ttl=600)
 def run_research_cached(query: str, k: int, model: str, max_chars: int, use_reranker: bool) -> str:
     return research(query=query, k=k, model=model, max_chars=max_chars, use_reranker=use_reranker)
 
 def split_sections(md: str):
-    # take the markdown blob and carve out cards
     md = md.strip()
     if not md:
         return "Results", []
@@ -38,11 +37,9 @@ def split_sections(md: str):
         cards.append({"title": title_line, "url": url, "body": body})
     return header, cards
 
-# --- sidebar ---------------------------------------------------------------
 with st.sidebar:
     st.header("⚙️ Settings")
 
-    # label -> internal id
     options = {
         "Llama 3.2 — 3B (fast)": "llama3.2:3b",
         "Llama 3.1 — 8B (deeper)": "llama3.1:8b",
@@ -67,14 +64,14 @@ with st.sidebar:
 
 st.markdown("[GitHub →](https://github.com/jtpriest1/autonomous-web-agent)")
 
-# --- header ----------------------------------------------------------------
+# header
 st.title("🕸️ Autonomous Web Agent — Local")
 st.write(
     "Ask a question. I’ll search, fetch pages, and summarize locally "
     "(Ollama or Hugging Face on MPS). No cloud keys needed."
 )
 
-# --- main form -------------------------------------------------------------
+# main form
 with st.form("query_form", clear_on_submit=False):
     query = st.text_input("Your research question", placeholder="e.g., What are the best tech companies to work for in 2025?")
     k = st.slider("How many results to summarize", min_value=1, max_value=5, value=3)
