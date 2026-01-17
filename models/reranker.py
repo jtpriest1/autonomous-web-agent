@@ -1,5 +1,5 @@
 # models/reranker.py
-# Tiny neural reranker using sentence-transformers (MiniLM).
+# neural reranker using sentence transformers
 
 from __future__ import annotations
 from typing import List, Tuple
@@ -42,9 +42,9 @@ def rerank(query: str, docs: List[str], top_k: int | None = None) -> List[Tuple[
     if not docs:
         return []
 
-    q = embed([query])            # [1, D]
-    d = embed(docs)               # [N, D]
-    sims = util.cos_sim(q, d).squeeze(0)  # [N]
+    q = embed([query])         
+    d = embed(docs)           
+    sims = util.cos_sim(q, d).squeeze(0) 
     pairs = [(i, float(sims[i].item())) for i in range(len(docs))]
     pairs.sort(key=lambda x: x[1], reverse=True)
     return pairs[:top_k] if top_k else pairs
