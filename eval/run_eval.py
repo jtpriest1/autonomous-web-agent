@@ -1,5 +1,5 @@
 # eval/run_eval.py
-# quick eval on a JSONL test set
+# eval on a JSONL test set
 
 from __future__ import annotations
 import argparse, json, time, statistics, pathlib
