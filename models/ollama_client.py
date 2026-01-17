@@ -1,22 +1,19 @@
 # models/ollama_client.py
-# tiny client for Ollama. pick model per call.
 
 from typing import Any, Dict, Optional
 import os
 import requests
 
-# url: prefer explicit OLLAMA_URL; otherwise build from host/port
 _host = os.getenv("OLLAMA_HOST", "localhost")
 _port = os.getenv("OLLAMA_PORT", "11434")
 OLLAMA_URL = os.getenv("OLLAMA_URL", f"http://{_host}:{_port}/api/generate")
 
-# defaults you can override
 DEFAULT_MODEL = os.getenv("AGENT_MODEL", "llama3.2:3b")
 QUALITY_MODEL = "llama3.1:8b"
 
 BASE_OPTIONS: Dict[str, Any] = {
     "temperature": 0.2,
-    "num_predict": 160,   # short answers = fast
+    "num_predict": 160, 
     "num_ctx": 2048,
     "keep_alive": "5m",
 }
@@ -51,7 +48,6 @@ def generate(
                 raise RuntimeError(f"Ollama request failed (fallback too): {e}") from e
         raise
 
-# small helpers if you like these names
 def generate_fast(prompt: str, **kw) -> str:
     return generate(prompt, model=DEFAULT_MODEL, **kw)
 
