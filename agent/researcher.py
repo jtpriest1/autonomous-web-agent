@@ -1,5 +1,5 @@
 # agent/researcher.py
-# Orchestrates: search -> (rerank) -> fetch page -> summarize with the chosen model.
+# (1. search) -> (2.rerank) -> (3. fetch page) -> (4.summarize with the chosen model)
 
 from typing import List, Tuple, Optional
 import time
