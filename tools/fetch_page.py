@@ -1,5 +1,4 @@
 # tools/fetch_page.py
-# Download a web page and return a clean text snippet.
 
 import requests
 from bs4 import BeautifulSoup
@@ -12,7 +11,6 @@ def fetch_page(url: str, max_chars: int = 4000) -> dict:
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Drop scripts/styles so we keep just readable text
     for tag in soup(["script", "style", "noscript"]):
         tag.decompose()
 
