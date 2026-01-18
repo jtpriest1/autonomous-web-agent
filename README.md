@@ -21,7 +21,7 @@ A small but real autonomous web-research agent that runs fully local.
 
 ### Local (venv)
 ```bash
-# 0) Requirements: macOS (Apple Silicon works great), Python 3.12+, Homebrew
+# 0) Requirements: macOS (Apple Silicon works fine), Python 3.12+, Homebrew
 # 1) Ollama
 brew install ollama
 brew services start ollama
