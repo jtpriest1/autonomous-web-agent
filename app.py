@@ -64,14 +64,13 @@ with st.sidebar:
 
 st.markdown("[GitHub →](https://github.com/jtpriest1/autonomous-web-agent)")
 
-# header
 st.title("🕸️ Autonomous Web Agent — Local")
 st.write(
     "Ask a question. I’ll search, fetch pages, and summarize locally "
     "(Ollama or Hugging Face on MPS). No cloud keys needed."
 )
 
-# main form
+# main
 with st.form("query_form", clear_on_submit=False):
     query = st.text_input("Your research question", placeholder="e.g., What are the best tech companies to work for in 2025?")
     k = st.slider("How many results to summarize", min_value=1, max_value=5, value=3)
